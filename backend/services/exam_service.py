@@ -16,9 +16,6 @@ def create_exam(created_by, data):
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
-    existing = exams_collection.find_one({"faculty_username": created_by, "mid": payload["mid"]})
-    if existing:
-        return {"status": "error", "message": f"Mid {payload['mid']} already exists for this faculty"}
     res = exams_collection.insert_one(payload)
     exam_id = str(res.inserted_id)
     faculty_collection.update_one(
