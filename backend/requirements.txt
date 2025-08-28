@@ -8,3 +8,4 @@ PyMuPDF
 gunicorn
 pytz
 bcrypt
+PyJWT
