@@ -10,7 +10,7 @@ from io import BytesIO
 from utils.mongo_utils import find_student_by_pin
 import os
 from datetime import datetime
-import pytz # Required for timezone conversion: pip install pytz
+import pytz # Required for timezone conversion
 from config import exams_collection
 
 # ========================================================================
@@ -18,26 +18,29 @@ from config import exams_collection
 # ========================================================================
 
 def format_time_local(iso_string, default="N/A"):
-    """Parses an ISO string, converts it from UTC to IST, and formats it to 12-hr AM/PM."""
     if not iso_string:
         return default
     try:
         dt_utc = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
         ist = pytz.timezone('Asia/Kolkata')
         dt_ist = dt_utc.astimezone(ist)
-        return dt_ist.strftime('%I:%M %p') # e.g., "10:15 PM"
+        return dt_ist.strftime('%I:%M %p')
     except (ValueError, TypeError):
         return default
 
+# --- CORRECTED FUNCTION ---
 def format_date_readable(iso_string, default="N/A"):
-    """Parses an ISO string and formats it into a readable date."""
     if not iso_string:
         return default
     try:
-        dt_obj = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
-        return dt_obj.strftime('%d-%m-%Y') # e.g., "28-08-2025"
+        dt_utc = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
+        # Convert the date back to the local timezone before formatting
+        ist = pytz.timezone('Asia/Kolkata')
+        dt_ist = dt_utc.astimezone(ist)
+        return dt_ist.strftime('%d-%m-%Y') # e.g., "28-08-2025"
     except (ValueError, TypeError):
         return default
+# --- END OF CORRECTION ---
 
 # ========================================================================
 # Main PDF Generation Function
@@ -52,7 +55,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     dept = student.get("department", "").upper()
     year = int(student.get("year", 0))
 
-    # --- NEW: Dynamic Data Fetching from MongoDB ---
     mid_exam_details = exams_collection.find_one({"year": year, "dept": dept, "mid": mid_no})
     if not mid_exam_details:
         mid_exam_details = exams_collection.find_one({"year": year, "dept": "ALL", "mid": mid_no})
@@ -61,7 +63,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
         print(f"Error: No Mid {mid_no} schedule found for Year {year}, Dept {dept}.")
         return None
 
-    # Use data from the database, with fallbacks
     exam_title = mid_exam_details.get("exam_title", f"Hall Ticket: Mid-{mid_no} Examinations")
     
     time_data = mid_exam_details.get("time", {})
@@ -74,13 +75,12 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
         (format_date_readable(item.get('date')), item.get('subject'), "") 
         for item in subjects_from_db
     ]
-    # --- End of Dynamic Data Logic ---
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-
-    # --- OLD UI: The entire visual layout is preserved below ---
+    
+    # ... The rest of your PDF drawing code remains the same ...
 
     if year == 2:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -132,7 +132,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     c.drawCentredString(width / 2, y, dept_line)
     y -= 16
     
-    # This now uses the dynamic title from the database
     c.setFont("Times-Bold", 12)
     c.drawCentredString(width / 2, y, exam_title)
     y -= 20
@@ -155,7 +154,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     table.drawOn(c, 40, y - th)
     y -= th + 18
 
-    # This now uses the dynamic, formatted time string
     c.setFont("Times-Roman", 11)
     c.drawString(40, y, exam_time)
     y -= 18
@@ -164,7 +162,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     c.drawString(40, y, "Exam Schedule:")
     y -= 16
 
-    # This now uses the dynamic, formatted subjects list
     table_data = [["Date", "Subject Name", "Signature of Invigilator"]] + subjects
     col_widths = [40*mm, width - 40*2 - 90*mm, 50*mm]
     subj_table = Table(table_data, colWidths=col_widths, repeatRows=1)
@@ -184,5 +181,5 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     c.save()
 
     buffer.seek(0)
-
     return buffer
+    
