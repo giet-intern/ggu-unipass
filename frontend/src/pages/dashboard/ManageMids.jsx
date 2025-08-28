@@ -116,7 +116,7 @@ const initialFormState = {
   mid: "",
   year: "",
   dept: "",
-  time: { start: null, end: null }, // Simplified time
+  time: { start: null, end: null },
   subjects: [{ date: null, subject: "" }],
 };
 
@@ -125,7 +125,6 @@ function formReducer(state, action) {
     case "SET_FIELD":
       return { ...state, [action.field]: action.payload };
     case "SET_TIME": {
-      // Simplified time logic
       const { key, value } = action.payload;
       return { ...state, time: { ...state.time, [key]: value } };
     }
@@ -155,8 +154,8 @@ function formReducer(state, action) {
 }
 
 const ExamForm = ({ editingItem, onSave, onCancel }) => {
-  const { data } = useAuth();
-  const username = data.username;
+  const { user } = useAuth(); // CORRECTED: Changed 'data' to 'user'
+  const username = user?.username; // Use optional chaining for safety
 
   const getInitialState = (item) => {
     if (!item) return initialFormState;
@@ -165,7 +164,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
       year: item.year ?? "",
       dept: item.dept ?? "",
       time: {
-        // Simplified time
         start: toDate(item.time?.start),
         end: toDate(item.time?.end),
       },
@@ -185,7 +183,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
   );
 
   const handleSave = () => {
-    // 1. Validation
     const errors = [];
     if (!form.mid) errors.push("Select Mid.");
     if (!form.year) errors.push("Select Year.");
@@ -201,12 +198,10 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
       return;
     }
 
-    // 2. Serialization (prepare data for API)
     const payload = {
       ...form,
       faculty_username: username,
       time: {
-        // Simplified time
         start: form.time.start?.toISOString() ?? null,
         end: form.time.end?.toISOString() ?? null,
       },
@@ -231,7 +226,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
         {isNew ? "Add Mid Schedule" : "Edit Mid Schedule"}
       </h3>
 
-      {/* Main Details */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <select
           value={form.mid}
@@ -289,7 +283,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
         </select>
       </div>
 
-      {/* Simplified Times */}
       <div className="mb-6">
         <div className="font-semibold text-rose-700 mb-3 flex items-center gap-2">
           <Clock className="w-4 h-4" /> Exam Time (12-hour)
@@ -320,7 +313,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
         </div>
       </div>
 
-      {/* Subjects */}
       <div className="mb-6">
         <div className="font-semibold text-rose-700 mb-3 flex items-center gap-2">
           <Calendar className="w-4 h-4" /> Subjects
@@ -377,7 +369,6 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
         </button>
       </div>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={handleSave}
@@ -403,7 +394,7 @@ const ExamForm = ({ editingItem, onSave, onCancel }) => {
 export default function ManageMids() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState({ mode: "list", item: null }); // 'list', 'add', 'edit'
+  const [view, setView] = useState({ mode: "list", item: null });
 
   const loadExams = async () => {
     try {
