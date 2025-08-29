@@ -19,4 +19,3 @@ app.register_blueprint(receipt_bp, url_prefix="/receipts")
 @app.route("/")
 def home():
     return "OK"
-
