@@ -9,7 +9,7 @@ from utils.mongo_utils import (
 )
 
 DATE_FORMAT = "%d-%b-%Y"
-MIN_DATE = datetime.strptime("08-Aug-2025", DATE_FORMAT)
+MIN_DATE = datetime.strptime("22-Aug-2025", DATE_FORMAT)
 
 def process_receipt_pdf(file_storage, user_pin):
     pdf_bytes = file_storage.read()
