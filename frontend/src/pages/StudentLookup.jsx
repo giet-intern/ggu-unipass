@@ -11,7 +11,7 @@ export default function StudentLookup() {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [downloading, setDownloading] = useState(false); // Added for generate button
+  const [downloading, setDownloading] = useState(false);
 
   const doSearch = async (searchPin) => {
     const pinToSearch = searchPin || pin.trim();
@@ -38,7 +38,6 @@ export default function StudentLookup() {
       const res = await generateHallticket(student.pin);
       saveBlob(res.data, `hallticket_${student.pin}.pdf`);
       toast.success("Hallticket downloaded");
-      // --- FIX: Close the student card after successful download ---
       setStudent(null);
     } catch {
       toast.error("Unable to generate hallticket");
@@ -68,6 +67,7 @@ export default function StudentLookup() {
       toast.error(message);
     } finally {
       setUploading(false);
+      setStudent(null);
     }
   };
 
