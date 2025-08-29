@@ -1,10 +1,7 @@
 import { useState } from "react";
 import StudentCard from "../components/StudentCard";
-import {
-  searchStudent,
-  generateHallticket,
-  uploadReceipt,
-} from "../api/studentApi";
+import { searchStudent, generateHallticket } from "../api/studentApi";
+import { addReceipt } from "../api/receiptApi";
 import { saveBlob } from "../utils/helpers";
 import toast from "react-hot-toast";
 import { Search } from "lucide-react";
@@ -14,12 +11,14 @@ export default function StudentLookup() {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [downloading, setDownloading] = useState(false); // Added for generate button
 
-  const doSearch = async () => {
-    if (!pin.trim()) return toast.error("Enter PIN");
+  const doSearch = async (searchPin) => {
+    const pinToSearch = searchPin || pin.trim();
+    if (!pinToSearch) return toast.error("Enter PIN");
     setLoading(true);
     try {
-      const { data } = await searchStudent(pin.trim());
+      const { data } = await searchStudent(pinToSearch);
       if (!data || !data.pin) {
         toast.error("Student not found");
         setStudent(null);
@@ -34,29 +33,42 @@ export default function StudentLookup() {
   };
 
   const handleGenerate = async () => {
+    setDownloading(true);
     try {
       const res = await generateHallticket(student.pin);
       saveBlob(res.data, `hallticket_${student.pin}.pdf`);
       toast.success("Hallticket downloaded");
+      // --- FIX: Close the student card after successful download ---
+      setStudent(null);
     } catch {
-      toast.error("Unable to generate");
+      toast.error("Unable to generate hallticket");
     }
+    setDownloading(false);
   };
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.type !== "application/pdf") return toast.error("Upload a PDF");
+    if (file.type !== "application/pdf") {
+      return toast.error("Please upload a PDF file.");
+    }
+
     setUploading(true);
     const fd = new FormData();
     fd.append("file", file);
+    fd.append("pin", student.pin);
+
     try {
-      await uploadReceipt(student.pin, fd);
-      toast.success("Receipt uploaded");
-    } catch {
-      toast.error("Upload failed");
+      await addReceipt(fd);
+      toast.success("Receipt uploaded successfully!");
+      await doSearch(student.pin);
+    } catch (err) {
+      const message =
+        err.response?.data?.message || "Upload failed. Please try again.";
+      toast.error(message);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   return (
@@ -83,7 +95,7 @@ export default function StudentLookup() {
             onKeyDown={(e) => e.key === "Enter" && doSearch()}
           />
           <button
-            onClick={doSearch}
+            onClick={() => doSearch()}
             disabled={loading}
             className="bg-rose-500 text-white px-5 text-sm font-medium hover:bg-rose-600 transition disabled:opacity-50"
           >
@@ -99,6 +111,7 @@ export default function StudentLookup() {
             onGenerate={handleGenerate}
             onUpload={handleUpload}
             uploading={uploading}
+            downloading={downloading} // Pass down downloading state
           />
         </div>
       )}

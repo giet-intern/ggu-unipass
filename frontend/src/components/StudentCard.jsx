@@ -12,6 +12,7 @@ export default function StudentCard({
   onGenerate,
   onUpload,
   uploading,
+  downloading, // Receive downloading prop
 }) {
   return (
     <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6 border border-gray-200">
@@ -58,16 +59,22 @@ export default function StudentCard({
         {student.due === 0 ? (
           <button
             onClick={onGenerate}
-            className="flex items-center justify-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-rose-600 transition"
+            disabled={downloading} // Disable button while downloading
+            className="flex items-center justify-center gap-2 bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-rose-600 transition disabled:opacity-50"
           >
             <FileDown className="w-4 h-4" />
-            Download Hallticket
+            {downloading ? "Generating..." : "Download Hallticket"}
           </button>
         ) : (
           <label className="flex items-center justify-center gap-2 cursor-pointer bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition">
             <Upload className="w-4 h-4" />
             {uploading ? "Uploading..." : "Upload Fee Receipt"}
-            <input type="file" hidden onChange={onUpload} />
+            <input
+              type="file"
+              hidden
+              onChange={onUpload}
+              disabled={uploading}
+            />
           </label>
         )}
       </div>

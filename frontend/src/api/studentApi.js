@@ -11,6 +11,6 @@ export const generateHallticket = (pin) =>
   });
 
 export const uploadReceipt = (pin, formData) =>
-  axios.post(`${API}/student/uploadReceipt/${pin}`, formData, {
+  axios.post(`${API}/receipts/`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
