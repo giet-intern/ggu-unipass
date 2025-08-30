@@ -9,7 +9,7 @@ from utils.mongo_utils import (
 )
 
 DATE_FORMAT = "%d-%b-%Y"
-MIN_DATE = datetime.strptime("22-Aug-2025", DATE_FORMAT)
+MIN_DATE = datetime.strptime("28-Aug-2025", DATE_FORMAT)
 
 def process_receipt_pdf(file_storage, user_pin):
     pdf_bytes = file_storage.read()
@@ -79,7 +79,7 @@ def process_receipt_pdf(file_storage, user_pin):
     due = student.get("due", 0)
     new_due = max(0, due - amount_paid)
     update_student_due(user_pin, new_due)
-
+    print(f"Updated due amount for {user_pin}: {new_due}")
     return {
         "success": True,
         "message": f"Due amount updated successfully with receipt {receipt_no}"

@@ -1,4 +1,3 @@
-from config import students_collection
 from utils.mongo_utils import find_student_by_pin, update_student_due
 
 def get_student(pin):

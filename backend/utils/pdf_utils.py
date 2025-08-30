@@ -10,12 +10,9 @@ from io import BytesIO
 from utils.mongo_utils import find_student_by_pin
 import os
 from datetime import datetime
-import pytz # Required for timezone conversion
+import pytz
 from config import exams_collection
 
-# ========================================================================
-# Helper Functions for Formatting
-# ========================================================================
 
 def format_time_local(iso_string, default="N/A"):
     if not iso_string:
@@ -28,23 +25,18 @@ def format_time_local(iso_string, default="N/A"):
     except (ValueError, TypeError):
         return default
 
-# --- CORRECTED FUNCTION ---
+
 def format_date_readable(iso_string, default="N/A"):
     if not iso_string:
         return default
     try:
         dt_utc = datetime.fromisoformat(iso_string.replace('Z', '+00:00'))
-        # Convert the date back to the local timezone before formatting
         ist = pytz.timezone('Asia/Kolkata')
         dt_ist = dt_utc.astimezone(ist)
-        return dt_ist.strftime('%d-%m-%Y') # e.g., "28-08-2025"
+        return dt_ist.strftime('%d-%m-%Y')
     except (ValueError, TypeError):
         return default
-# --- END OF CORRECTION ---
 
-# ========================================================================
-# Main PDF Generation Function
-# ========================================================================
 
 def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     student = find_student_by_pin(pin)
@@ -80,8 +72,6 @@ def generate_hallticket_pdf(pin: str, mid_no: int = 1):
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
     
-    # ... The rest of your PDF drawing code remains the same ...
-
     if year == 2:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         logo_path = os.path.join(base_dir, "assets", "ggu-logo.png")

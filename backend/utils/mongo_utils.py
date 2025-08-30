@@ -10,7 +10,6 @@ def get_students_by_year(year):
     return list(students_collection.find({"year": int(year)}))
 
 def save_receipt(receipt_id, pin, amount, file_data):
-    """Saves a new receipt document with Base64 file data."""
     receipts_collection.insert_one({
         "receipt_id": receipt_id, 
         "pin": pin, 
@@ -19,5 +18,4 @@ def save_receipt(receipt_id, pin, amount, file_data):
     })
 
 def get_receipt(receipt_id):
-    """Finds a single receipt by its ID."""
     return receipts_collection.find_one({"receipt_id": receipt_id})
