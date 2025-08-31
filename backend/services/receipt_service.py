@@ -79,7 +79,7 @@ def process_receipt_pdf(file_storage, user_pin):
     due = student.get("due", 0)
     new_due = max(0, due - amount_paid)
     update_student_due(user_pin, new_due)
-    print(f"Updated due amount for {user_pin}: {new_due}")
+    print(f"Previous due amount for {user_pin}: {due}\nAmount paid: {amount_paid}\nUpdated due amount for {user_pin}: {new_due}")
     return {
         "success": True,
         "message": f"Due amount updated successfully with receipt {receipt_no}"
