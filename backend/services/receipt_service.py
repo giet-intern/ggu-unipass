@@ -18,7 +18,7 @@ def process_receipt_pdf(file_storage, user_pin):
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     text = "\n".join(page.get_text() for page in doc)
     doc.close()
-
+    print(text)
     lines = text.splitlines()
     roll_no = None
     amount_paid = None
